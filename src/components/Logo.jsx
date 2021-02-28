@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import styled from 'styled-components'
 
-import logo from '../AMETEK_Spectro_Logo.jpg'
+import logo from '../l_openFDA.png'
 
 const Wrapper = styled.a.attrs({
     className: 'navbar-brand',
@@ -10,8 +10,8 @@ const Wrapper = styled.a.attrs({
 class Logo extends Component {
     render() {
         return (
-            <Wrapper href="https://www.spectrosci.com/" target="_blank">
-                <img src={logo} width="350" height="50" alt="spectrosci.com" />
+            <Wrapper href="https://open.fda.gov/" target="_blank">
+                <img src={logo} width="350" height="50" alt="open.fda.gov" />
             </Wrapper>
         )
     }

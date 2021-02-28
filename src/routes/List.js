@@ -1,123 +1,31 @@
-// import React, { Component , useRef} from 'react'
 import React, { Component } from 'react'
 import ReactTable from 'react-table'
-import api from '../api'
-
-// import QRCode from 'qrcode.react'
 import '../style/style.css'
-// import Printer from '@eyelly/react-printer'
-// import ReactToPrint from 'react-to-print'
-// import jsPDF from "jspdf"
-// import PrintTemplate from 'react-print'
-
 import styled from 'styled-components'
-
 import 'react-table/react-table.css'
-// import { useHistory } from 'react-router-dom'
-// import { Redirect } from 'react-router-dom'
 
 const Table = styled.div`
     padding: 0 40px 40px 40px;
 `
-
-const Update = styled.div`
-    color: orange;
-    cursor: pointer;
-`
-
-const Delete = styled.div`
-    color: red;
-    cursor: pointer;
-`
-// const View = styled.div`
-// `
-
-class UpdateOil extends Component {
-    updateUser = event => {
-        // event.preventDefault()
-        event.stopPropagation()
-        window.location.href = `/oils/edit/${this.props.id}`
-    }
-    render() {
-        return <Update onClick={this.updateUser}>EDIT</Update>
-    }
-}
-
-class DeleteOil extends Component {
-    deleteUser = event => {
-        // event.preventDefault()
-        event.stopPropagation()
-        console.log(this.props.id)
-        if (
-            window.confirm(
-                `Delete ${this.props.name} ?`
-            )
-        ) {
-            api.deleteOilById(this.props.id)
-            window.location.reload()
-        }
-        else window.location.href = `/oils/list` 
-    }
-    render() {
-        return <Delete onClick={this.deleteUser}>DELETE</Delete>
-    }
-}
-// TO DOWNLOAD QR PICTURE
-// const downloadQR = (pass) => {
-//     console.log(pass)
-//     const canvas = document.getElementById(pass)
-//     const pngUrl = canvas
-//       .toDataURL("image/png")
-//       .replace("image/png", "image/octet-stream")
-//     let downloadLink = document.createElement("a")
-//     downloadLink.href = pngUrl
-//     downloadLink.download = `${pass}.png`
-//     document.body.appendChild(downloadLink)
-//     downloadLink.click()
-//     document.body.removeChild(downloadLink)
-//   }
- 
-// DISPLAY QR CODE
-// class ShowQR extends Component {
-//     render() {
-//         // console.log(this.props)
-//         // let n = 0;
-//         return ( 
-//             // <Image width="100px" src="https://raw.githubusercontent.com/zpao/qrcode.react/HEAD/qrcode.png"/>
-//             // <QRCode size={100} value="http://spectroscientific.com" />
-//             // <ComponentToPrint ref={el => (this.componentRef = el)} />
-//             <QRCode    
-//                 size={100} 
-//                 value={this.props.salesforce} 
-//                 // onClick = {handlePrint}
-//                 // onClick = {event => this.print(event)}
-//             />
-//             // cell: row =>
-//             //     row.caseNumber ? <QRCode data-qr={row.title} value={row.title} // /> : ""
-//         )
-//     }
-// }
- 
-class OilsList extends Component {
+class List extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            oils: [],
+            // oils: [],
             columns: [],
             isLoading: false,
+            drugs: []
         }
     }
 
-    componentDidMount = async () => {
-        this.setState({ isLoading: true })
-
-        await api.getAllOils().then(oils => {
-            this.setState({
-                oils: oils.data.data,
-                // oils: oils.data,
-                isLoading: false,
-            })
+    componentDidMount() {
+        fetch('https://api.fda.gov/drug/drugsfda.json?api_key=aJVC773jRVPLu26rRtBLlyJaNgwaUZaXIAS438pZ&limit=100')
+        .then(res => res.json())
+        .then((data) => {
+            this.setState({ drugs: data.results})
+            // console.log(data.results[0].openfda.application_number[0])
         })
+        .catch(console.log)
     }
     filterCaseInsensitive = (filter, row) => {
         const id = filter.pivotId || filter.id;
@@ -132,35 +40,19 @@ class OilsList extends Component {
         }
         return true;
     }
-    oilView(e, link){
-        e.preventDefault();
-        this.props.history.push(link);
-    }
 
     render() {
-        const { oils, isLoading } = this.state
-        // const code = oils.data.caseNumber
-        // console.log(oils[0])
-        // console.log(oils[1])
-        // let n = 0;
+        const { drugs, isLoading } = this.state
+        // return (
+        //     <Drugs drugs={this.state.drugs}/>
+        //   );
         const columns = [
             {
-                Header: 'Status',
-                selector: 'status',
-                accessor: 'status',
+                Header: 'Application Number',
+                selector: 'applicationNumber',
+                accessor: 'application_number',
                 filterable: true,
                 minWidth: 150,
-                getProps: (state, rowInfo, column) => {
-                    return {
-                        style: {
-                        color: rowInfo && rowInfo.row.status === 'BACKLOG' ? 'red' 
-                            : rowInfo && rowInfo.row.status === 'IN PROGRESS' ? 'blue' 
-                            : rowInfo && rowInfo.row.status === 'COMPLETE' ? 'green' 
-                            : null,
-                        // marginTop: '40px'
-                        },
-                    };
-                },
             },
             // {
             //     Header: 'QR Code',
@@ -190,38 +82,48 @@ class OilsList extends Component {
             //     },
             // },
             {
-                Header: 'Salesforce Case #',
-                accessor: 'salesforce',
+                Header: 'Sponsor Name',
+                accessor: 'sponsor_name',
                 filterable: true,
                 sortable: true,
                 minWidth: 150,
             },
             {
-                Header: 'JIRA Case #',
-                accessor: 'jira',
+                Header: 'Reference Drug (Yes/No)',
+                accessor: 'products[0].reference_drug',
                 filterable: true,
                 minWidth: 150,
+                getProps: (state, rowInfo, column) => {
+                    return {
+                        style: {
+                        color: rowInfo && rowInfo.row.reference_drug === 'No' ? 'red' 
+                            : rowInfo && rowInfo.row.reference_drug === 'Yes' ? 'green' 
+                            : null,
+                        },
+                    };
+                },
             },
             {
-                Header: 'Name',
-                accessor: 'oilName',
+                Header: 'Brand Name',
+                accessor: 'products[0].brand_name',
                 filterable: true,
+                minwidth: 150,
             },
             {
-                Header: 'Manufacturer',
-                accessor: 'manufacturer',
+                Header: 'Dosage Form',
+                accessor: 'products[0].dosage_form',
                 filterable: true,
                 minWidth: 150
-
             },
-            // {
-            //     Header: 'Customer Name',
-            //     accessor: 'customerName',
-            //     filterable: true
-            // },
             {
-                Header: 'Spectro Representative',
-                accessor: 'rep',
+                Header: 'Route',
+                accessor: 'products[0].route',
+                filterable: true,
+                minWidth: 150
+            },
+            {
+                Header: 'Marketing Status',
+                accessor: 'products[0].marketing_status',
                 filterable: true,
                 minWidth: 200
             },
@@ -256,37 +158,37 @@ class OilsList extends Component {
                 filterable: true,
                 minWidth: 150
             },
-            {
-                // Header: '',
-                // accessor: '',
-                sortable: false,
-                filterable: false,
-                Cell: function(props) {
-                    return (
-                        <span>
-                            <UpdateOil id={props.original._id} onClick={() => this.stopPropagation()}/>
-                        </span>
-                    )
-                },
-            },
-            {
-                // Header: '',
-                // accessor: '',
-                sortable: false,
-                filterable: false,
-                Cell: function(props) {
-                    return (
-                        <span>
-                            <DeleteOil id={props.original._id} name={props.original.oilName} onClick={() => this.stopPropagation()}/>
-                            {/* <label htmlFor={props.original._id} onClick={() => this.stopPropagation()}/> */}
-                        </span>
-                    )
-                },
-            },
+            // {
+            //     // Header: '',
+            //     // accessor: '',
+            //     sortable: false,
+            //     filterable: false,
+            //     Cell: function(props) {
+            //         return (
+            //             <span>
+            //                 <UpdateOil id={props.original._id} onClick={() => this.stopPropagation()}/>
+            //             </span>
+            //         )
+            //     },
+            // },
+            // {
+            //     // Header: '',
+            //     // accessor: '',
+            //     sortable: false,
+            //     filterable: false,
+            //     Cell: function(props) {
+            //         return (
+            //             <span>
+            //                 <DeleteOil id={props.original._id} name={props.original.oilName} onClick={() => this.stopPropagation()}/>
+            //                 {/* <label htmlFor={props.original._id} onClick={() => this.stopPropagation()}/> */}
+            //             </span>
+            //         )
+            //     },
+            // },
         ]
 
         let showTable = true
-        if (!oils.length) {
+        if (!drugs.length) {
             showTable = false
         }
 
@@ -296,10 +198,10 @@ class OilsList extends Component {
                 {showTable && (                  
                     <ReactTable
                         className="-highlight" 
-                        data={oils}
+                        data={drugs}
                         columns={columns}
                         loading={isLoading}
-                        defaultPageSize={10}
+                        defaultPageSize={50}
                         showPageSizeOptions={true}
                         minRows={1}
                         filterable={true}
@@ -323,4 +225,4 @@ class OilsList extends Component {
     }
 }
 
-export default OilsList
+export default List
