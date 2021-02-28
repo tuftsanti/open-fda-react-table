@@ -3,6 +3,8 @@ import ReactTable from 'react-table'
 import '../style/style.css'
 import styled from 'styled-components'
 import 'react-table/react-table.css'
+// console.log(process.env.REACT_APP_OPEN_FDA_KEY)
+const OPENFDAKEY = process.env.REACT_APP_OPEN_FDA_KEY;
 
 const Table = styled.div`
     padding: 0 40px 40px 40px;
@@ -11,7 +13,6 @@ class List extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            // oils: [],
             columns: [],
             isLoading: false,
             drugs: []
@@ -19,7 +20,7 @@ class List extends Component {
     }
 
     componentDidMount() {
-        fetch('https://api.fda.gov/drug/drugsfda.json?api_key=aJVC773jRVPLu26rRtBLlyJaNgwaUZaXIAS438pZ&limit=100')
+        fetch(`https://api.fda.gov/drug/drugsfda.json?api_key=${OPENFDAKEY}&limit=5`)
         .then(res => res.json())
         .then((data) => {
             this.setState({ drugs: data.results})
@@ -52,44 +53,17 @@ class List extends Component {
                 selector: 'applicationNumber',
                 accessor: 'application_number',
                 filterable: true,
-                minWidth: 150,
+                minWidth: 120,
             },
-            // {
-            //     Header: 'QR Code',
-            //     selector: 'qrcode',
-            //     ignoreRowClick: true,
-            //     // accessor: 'caseNumber',
-            //     Cell: function (props) {
-            //         // const componentRef = useRef()
-            //         // const printContent = useRef()
-            //         // console.log(props)
-            //         const pass = `QRCODE${props.row.salesforce}`
-            //         return (
-            //              <div>
-            //                 <QRCode
-            //                     onClick={() => downloadQR(pass)}
-            //                     size={100} 
-            //                     value={props.row.salesforce} 
-            //                     id={pass}
-            //                     // id='code'
-            //                 />
-            //                 {/* <ShowQR 
-            //                     salesforce = {props.original.salesforce} 
-            //                 />   */}
-            //             </div>
-
-            //         )
-            //     },
-            // },
             {
                 Header: 'Sponsor Name',
                 accessor: 'sponsor_name',
                 filterable: true,
                 sortable: true,
-                minWidth: 150,
+                minWidth: 250,
             },
             {
-                Header: 'Reference Drug (Yes/No)',
+                Header: 'Reference Drug',
                 accessor: 'products[0].reference_drug',
                 filterable: true,
                 minWidth: 150,
@@ -107,7 +81,7 @@ class List extends Component {
                 Header: 'Brand Name',
                 accessor: 'products[0].brand_name',
                 filterable: true,
-                minwidth: 150,
+                minwidth: 250,
             },
             {
                 Header: 'Dosage Form',
@@ -125,66 +99,8 @@ class List extends Component {
                 Header: 'Marketing Status',
                 accessor: 'products[0].marketing_status',
                 filterable: true,
-                minWidth: 200
-            },
-            // {
-            //     Header: 'USED/NEW',
-            //     accessor: 'usedNew',
-            //     filterable: true
-            // },
-            // {
-            //     Header: 'Volume Supplied',
-            //     accessor: 'volumeSupplied',
-            //     filterable: true
-            // },
-            // {
-            //     Header: 'Viscosity Grade',
-            //     accessor: 'viscosityGrade',
-            //     filterable: true
-            // },
-            // {
-            //     Header: 'Viscosity Data',
-            //     accessor: 'viscosityData',
-            //     filterable: true
-            // },
-            // {
-            //     Header: 'Particle Count',
-            //     accessor: 'particleCount',
-            //     filterable: true
-            // },
-            {
-                Header: 'Date Received',
-                accessor: 'dateReceived',
-                filterable: true,
                 minWidth: 150
             },
-            // {
-            //     // Header: '',
-            //     // accessor: '',
-            //     sortable: false,
-            //     filterable: false,
-            //     Cell: function(props) {
-            //         return (
-            //             <span>
-            //                 <UpdateOil id={props.original._id} onClick={() => this.stopPropagation()}/>
-            //             </span>
-            //         )
-            //     },
-            // },
-            // {
-            //     // Header: '',
-            //     // accessor: '',
-            //     sortable: false,
-            //     filterable: false,
-            //     Cell: function(props) {
-            //         return (
-            //             <span>
-            //                 <DeleteOil id={props.original._id} name={props.original.oilName} onClick={() => this.stopPropagation()}/>
-            //                 {/* <label htmlFor={props.original._id} onClick={() => this.stopPropagation()}/> */}
-            //             </span>
-            //         )
-            //     },
-            // },
         ]
 
         let showTable = true
@@ -201,23 +117,20 @@ class List extends Component {
                         data={drugs}
                         columns={columns}
                         loading={isLoading}
-                        defaultPageSize={50}
+                        defaultPageSize={25}
                         showPageSizeOptions={true}
                         minRows={1}
                         filterable={true}
+                        showPaginationTop={true}
+                        resizable={true}
                         defaultFilterMethod={this.filterCaseInsensitive}
-                        defaultSorted={[
-                            {
-                            id: 'salesforce',
-                            desc: false
-                            }
-                        ]}
+                        // defaultSorted={[
+                        //     {
+                        //     id: 'application_number',
+                        //     desc: false
+                        //     }
+                        // ]}
                         style={{ textAlign: "center", }} 
-                        getTrProps={(state, rowInfo, column, instance) => ({
-                            onClick: e => this.oilView(e, `/oils/${rowInfo.original._id}`
-                            ), 
-                            // onClick: e => console.log(rowInfo.original._id)
-                          })}
                     />
                 )}
             </Table>
