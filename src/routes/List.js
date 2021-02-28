@@ -3,8 +3,13 @@ import ReactTable from 'react-table'
 import '../style/style.css'
 import styled from 'styled-components'
 import 'react-table/react-table.css'
+
+import withDraggableColumns from 'react-table-hoc-draggable-columns';
+import 'react-table-hoc-draggable-columns/dist/styles.css';
 // console.log(process.env.REACT_APP_OPEN_FDA_KEY)
 const OPENFDAKEY = process.env.REACT_APP_OPEN_FDA_KEY;
+
+const ReactTableDraggableColumns = withDraggableColumns(ReactTable);
 
 const Table = styled.div`
     padding: 0 40px 40px 40px;
@@ -20,7 +25,7 @@ class List extends Component {
     }
 
     componentDidMount() {
-        fetch(`https://api.fda.gov/drug/drugsfda.json?api_key=${OPENFDAKEY}&limit=5`)
+        fetch(`https://api.fda.gov/drug/drugsfda.json?api_key=${OPENFDAKEY}&limit=500`)
         .then(res => res.json())
         .then((data) => {
             this.setState({ drugs: data.results})
@@ -28,6 +33,7 @@ class List extends Component {
         })
         .catch(console.log)
     }
+
     filterCaseInsensitive = (filter, row) => {
         const id = filter.pivotId || filter.id;
         const content = row[id];
@@ -54,6 +60,9 @@ class List extends Component {
                 accessor: 'application_number',
                 filterable: true,
                 minWidth: 120,
+                // Filter: () => (
+                //     <input placeholder={'Search by Application..'} />
+                // ),
             },
             {
                 Header: 'Sponsor Name',
@@ -61,12 +70,18 @@ class List extends Component {
                 filterable: true,
                 sortable: true,
                 minWidth: 250,
+                // Filter: () => (
+                //     <input placeholder={'Search by Sponsor..'} />
+                // )
             },
             {
                 Header: 'Reference Drug',
                 accessor: 'products[0].reference_drug',
                 filterable: true,
                 minWidth: 150,
+                // Filter: () => (
+                //     <input placeholder={'Search by Reference..'} />
+                // ),
                 getProps: (state, rowInfo, column) => {
                     return {
                         style: {
@@ -82,24 +97,36 @@ class List extends Component {
                 accessor: 'products[0].brand_name',
                 filterable: true,
                 minwidth: 250,
+                // Filter: () => (
+                //     <input placeholder={'Search by Brand..'} />
+                // )
             },
             {
                 Header: 'Dosage Form',
                 accessor: 'products[0].dosage_form',
                 filterable: true,
-                minWidth: 150
+                minWidth: 150,
+                // Filter: () => (
+                //     <input placeholder={'Search by Dosage..'} />
+                // )
             },
             {
                 Header: 'Route',
                 accessor: 'products[0].route',
                 filterable: true,
-                minWidth: 150
+                minWidth: 150,
+                // Filter: () => (
+                //     <input placeholder={'Search by Route..'} />
+                // )
             },
             {
                 Header: 'Marketing Status',
                 accessor: 'products[0].marketing_status',
                 filterable: true,
-                minWidth: 150
+                minWidth: 150,
+                // Filter: () => (
+                //     <input placeholder={'Search by Status..'} />
+                // )
             },
         ]
 
@@ -112,8 +139,19 @@ class List extends Component {
         return (
             <Table >
                 {showTable && (                  
-                    <ReactTable
-                        className="-highlight" 
+                    <ReactTableDraggableColumns
+                        draggableColumns= {{
+                            mode: 'reorder',
+                            enableColumnWideDrag: true,
+                            draggable: ['application_number', 
+                                        'sponsor_name', 
+                                        'products[0].reference_drug', 
+                                        'products[0].brand_name', 
+                                        'products[0].dosage_form',
+                                        'products[0].route',
+                                        'products[0].marketing_status'],
+                        }}
+                        className='-highlight' 
                         data={drugs}
                         columns={columns}
                         loading={isLoading}
