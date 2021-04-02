@@ -1,3 +1,4 @@
 import List from './List'
+import View from './View'
 
-export { List }
+export { List, View }

@@ -48,6 +48,11 @@ class List extends Component {
         return true;
     }
 
+    viewDrug(e, link){
+        e.preventDefault();
+        this.props.history.push(link);
+    }
+
     render() {
         const { drugs, isLoading } = this.state
         // return (
@@ -169,6 +174,14 @@ class List extends Component {
                         //     }
                         // ]}
                         style={{ textAlign: "center", }} 
+                        getTrProps={(state, rowInfo, column, instance) => ({
+                            onClick: e => {
+                                console.log(rowInfo.original.sponsor_name)
+                                this.viewDrug(e, `/${rowInfo.index}`)
+                                // this.viewDrug(e, `/View`)
+                            }
+                            // onClick: e => console.log(rowInfo.index)
+                          })}
                     />
                 )}
             </Table>
